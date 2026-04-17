@@ -212,13 +212,15 @@ def poll_detail(poll_id):
         # 查询投票记录（基于IP或用户标识符）
         vote_record = None
         try:
-            if user_id:
-                vote_record = Vote.query.filter(
-                    (Vote.poll_id == poll_id) & 
-                    ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
-                ).first()
-            else:
-                vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+            # 先尝试基于IP查询，兼容旧表结构
+            vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+            
+            # 如果有user_id且未找到记录，尝试基于user_id查询
+            if user_id and not vote_record:
+                try:
+                    vote_record = Vote.query.filter_by(poll_id=poll_id, user_id=user_id).first()
+                except Exception as e:
+                    print(f'基于user_id查询出错: {e}')
         except Exception as e:
             print(f'查询投票记录出错: {e}')
             vote_record = None
@@ -265,13 +267,19 @@ def vote(poll_id):
 
     # 检查是否已经投过票（基于IP或用户标识符）
     existing_vote = None
-    if user_id:
-        existing_vote = Vote.query.filter(
-            (Vote.poll_id == poll_id) & 
-            ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
-        ).first()
-    else:
+    try:
+        # 先尝试基于IP查询，兼容旧表结构
         existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+        
+        # 如果有user_id且未找到记录，尝试基于user_id查询
+        if user_id and not existing_vote:
+            try:
+                existing_vote = Vote.query.filter_by(poll_id=poll_id, user_id=user_id).first()
+            except Exception as e:
+                print(f'基于user_id查询出错: {e}')
+    except Exception as e:
+        print(f'查询投票记录出错: {e}')
+        existing_vote = None
     
     if existing_vote:
         print(f'用户已经投过票，投票记录ID: {existing_vote.id}')
@@ -291,13 +299,24 @@ def vote(poll_id):
             return jsonify({'success': False, 'message': '选择的选项无效'}), 400
 
     try:
-        vote_record = Vote(
-            poll_id=poll_id,
-            ip_address=client_ip,
-            user_id=user_id
-        )
-        db.session.add(vote_record)
-        print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}, user_id={user_id}')
+        # 尝试创建投票记录，兼容旧表结构
+        try:
+            vote_record = Vote(
+                poll_id=poll_id,
+                ip_address=client_ip,
+                user_id=user_id
+            )
+            db.session.add(vote_record)
+            print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}, user_id={user_id}')
+        except Exception as e:
+            # 如果user_id字段不存在，只使用ip_address
+            print(f'创建投票记录出错（包含user_id）: {e}')
+            vote_record = Vote(
+                poll_id=poll_id,
+                ip_address=client_ip
+            )
+            db.session.add(vote_record)
+            print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}')
 
         for opt_id in selected_options:
             option = PollOption.query.get(int(opt_id))
