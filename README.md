@@ -104,13 +104,17 @@ ADMIN_PASSWORD=your-strong-password gunicorn app:app -w 4 -b 0.0.0.0:5000
 6. **部署应用**：
    - 点击 "Deploy" 按钮
    - Railway 会自动构建和部署应用
-7. **访问应用**：
+7. **初始化数据库**：
+   - 在 Railway 的 "Deployments" → "Run Command" 中执行
+   - 命令：`python railway_init.py`
+   - 或者使用 `python init_db.py`（完整初始化，包含表结构和注释）
+8. **访问应用**：
    - 部署完成后，Railway 会提供一个公共 URL
    - 使用该 URL 访问你的投票系统
 
 ### 部署注意事项
 
-- **数据库初始化**：首次部署后，需要运行 `python init_db.py` 初始化数据库
+- **数据库初始化**：首次部署后，需要运行 `python railway_init.py` 或 `python init_db.py` 初始化数据库
   - 可以在 Railway 的 "Deployments" → "Run Command" 中执行
 - **环境变量安全**：确保所有敏感信息都通过环境变量设置，不要硬编码在代码中
 - **定期备份**：定期备份数据库，以防数据丢失
