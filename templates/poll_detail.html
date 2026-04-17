@@ -76,8 +76,15 @@
 
 {% block extra_js %}
 <script>
+let isSubmitting = false;
+
 document.getElementById('voteForm').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    // 防止重复提交
+    if (isSubmitting) {
+        return;
+    }
 
     const form = this;
     const selectedOptions = form.querySelectorAll('input[name="options"]:checked');
@@ -95,6 +102,9 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
 
     const formData = new FormData(form);
     const submitBtn = document.getElementById('submitVoteBtn');
+    
+    // 设置提交状态
+    isSubmitting = true;
     submitBtn.disabled = true;
     submitBtn.textContent = '提交中...';
 
@@ -108,10 +118,22 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 直接刷新页面，显示投票结果
-            location.reload();
+            // 显示成功消息，然后刷新页面
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success';
+            successDiv.textContent = '投票成功！正在跳转到结果页面...';
+            form.parentNode.insertBefore(successDiv, form);
+            
+            // 禁用表单
+            form.style.display = 'none';
+            
+            // 延迟刷新，让用户看到成功消息
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         } else {
             alert(data.message);
+            isSubmitting = false;
             submitBtn.disabled = false;
             submitBtn.textContent = '提交投票';
         }
@@ -119,6 +141,7 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     .catch(error => {
         console.error('投票出错：', error);
         alert('投票失败，请稍后重试');
+        isSubmitting = false;
         submitBtn.disabled = false;
         submitBtn.textContent = '提交投票';
     });

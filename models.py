@@ -82,6 +82,11 @@ class Vote(db.Model):
     poll_id = db.Column(db.Integer, db.ForeignKey('polls.id'), nullable=False, comment='投票ID')
     ip_address = db.Column(db.String(45), nullable=False, comment='投票者IP地址')
     voted_at = db.Column(db.DateTime, default=datetime.utcnow, comment='投票时间')
+    
+    # 添加唯一约束，确保每个IP只能对每个投票投一次票
+    __table_args__ = (
+        db.UniqueConstraint('poll_id', 'ip_address', name='_poll_ip_uc'),
+    )
 
     def to_dict(self):
         """将投票记录对象转换为字典格式"""
