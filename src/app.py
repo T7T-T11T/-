@@ -25,7 +25,14 @@ except Exception:
     # 在生产环境中可能没有.env文件，忽略加载错误
     pass
 
-app = Flask(__name__)
+import os
+
+# 获取当前文件所在目录的绝对路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 模板目录路径
+app = Flask(__name__, 
+            template_folder=os.path.join(current_dir, '..', 'templates'),
+            static_folder=os.path.join(current_dir, '..', 'static'))
 app.config.from_object(Config)
 
 db.init_app(app)
