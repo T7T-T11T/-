@@ -24,6 +24,39 @@ app.config.from_object(Config)
 
 db.init_app(app)
 
+# 数据库初始化函数
+def init_database():
+    """初始化数据库，创建表结构和默认管理员账户"""
+    with app.app_context():
+        try:
+            # 尝试连接数据库并创建表
+            print('正在初始化数据库...')
+            db.create_all()
+            print('数据库表创建成功')
+            
+            # 创建默认管理员账户
+            admin = User.query.filter_by(username='admin').first()
+            if not admin:
+                # 从环境变量读取管理员密码，默认值仅用于开发环境
+                admin_password = os.environ.get('ADMIN_PASSWORD', 'asdfghjkl555')
+                admin = User(
+                    username='admin',
+                    is_admin=True
+                )
+                admin.set_password(admin_password)
+                db.session.add(admin)
+                db.session.commit()
+                print('默认管理员账户已创建')
+                print('提示：在生产环境中，请通过 ADMIN_PASSWORD 环境变量设置强密码')
+            else:
+                print('管理员账户已存在')
+        except Exception as e:
+            print(f'数据库初始化出错：{e}')
+            print('请确保数据库连接配置正确，并且数据库服务已启动')
+
+# 在应用启动时执行数据库初始化
+init_database()
+
 
 def login_required(f):
     """登录装饰器"""
@@ -338,30 +371,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            # 尝试连接数据库并创建表
-            print('正在初始化数据库...')
-            db.create_all()
-            print('数据库表创建成功')
-            
-            # 创建默认管理员账户
-            admin = User.query.filter_by(username='admin').first()
-            if not admin:
-                # 从环境变量读取管理员密码，默认值仅用于开发环境
-                admin_password = os.environ.get('ADMIN_PASSWORD', 'asdfghjkl555')
-                admin = User(
-                    username='admin',
-                    is_admin=True
-                )
-                admin.set_password(admin_password)
-                db.session.add(admin)
-                db.session.commit()
-                print('默认管理员账户已创建')
-                print('提示：在生产环境中，请通过 ADMIN_PASSWORD 环境变量设置强密码')
-            else:
-                print('管理员账户已存在')
-        except Exception as e:
-            print(f'数据库初始化出错：{e}')
-            print('请确保数据库连接配置正确，并且数据库服务已启动')
     app.run(host=Config.HOST, port=Config.PORT, debug=Config.DEBUG)
