@@ -78,6 +78,40 @@
 <script>
 let isSubmitting = false;
 
+// 生成唯一标识符
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// 获取或创建用户标识符
+function getUserId() {
+    let userId = localStorage.getItem('vote_user_id');
+    if (!userId) {
+        userId = generateUUID();
+        localStorage.setItem('vote_user_id', userId);
+    }
+    return userId;
+}
+
+// 页面加载时检查并添加user_id参数
+function ensureUserIdInUrl() {
+    const userId = getUserId();
+    const url = new URL(window.location.href);
+    
+    if (!url.searchParams.has('user_id')) {
+        url.searchParams.set('user_id', userId);
+        // 替换历史记录，避免页面刷新
+        window.history.replaceState({}, '', url.toString());
+    }
+}
+
+// 页面加载时执行
+ensureUserIdInUrl();
+
 document.getElementById('voteForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -101,6 +135,9 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     }
 
     const formData = new FormData(form);
+    // 添加用户标识符
+    formData.append('user_id', getUserId());
+    
     const submitBtn = document.getElementById('submitVoteBtn');
     
     // 设置提交状态

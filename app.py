@@ -203,10 +203,21 @@ def poll_detail(poll_id):
         })
 
     client_ip = request.remote_addr
+    # 从请求参数中获取user_id
+    user_id = request.args.get('user_id')
     print(f'Poll detail - 用户IP地址: {client_ip}')
+    print(f'Poll detail - 用户标识符: {user_id}')
     
-    # 查询投票记录
-    vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+    # 查询投票记录（基于IP或用户标识符）
+    vote_record = None
+    if user_id:
+        vote_record = Vote.query.filter(
+            (Vote.poll_id == poll_id) & 
+            ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
+        ).first()
+    else:
+        vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+    
     has_voted = vote_record is not None
     print(f'Poll detail - 投票记录查询结果: {vote_record}')
     print(f'Poll detail - has_voted: {has_voted}')
@@ -215,7 +226,7 @@ def poll_detail(poll_id):
     all_votes = Vote.query.filter_by(poll_id=poll_id).all()
     print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
     for vote in all_votes:
-        print(f'  - IP: {vote.ip_address}, 时间: {vote.voted_at}')
+        print(f'  - IP: {vote.ip_address}, UserID: {vote.user_id}, 时间: {vote.voted_at}')
 
     return render_template('poll_detail.html',
                          poll=poll,
@@ -233,10 +244,20 @@ def vote(poll_id):
         return jsonify({'success': False, 'message': '投票不存在或已被删除'}), 404
 
     client_ip = request.remote_addr
+    user_id = request.form.get('user_id')
     print(f'Vote - 用户IP地址: {client_ip}')
+    print(f'Vote - 用户标识符: {user_id}')
 
-    # 检查是否已经投过票
-    existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+    # 检查是否已经投过票（基于IP或用户标识符）
+    existing_vote = None
+    if user_id:
+        existing_vote = Vote.query.filter(
+            (Vote.poll_id == poll_id) & 
+            ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
+        ).first()
+    else:
+        existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+    
     if existing_vote:
         print(f'用户已经投过票，投票记录ID: {existing_vote.id}')
         return jsonify({'success': False, 'message': '您已经投过票了'}), 403
@@ -257,10 +278,11 @@ def vote(poll_id):
     try:
         vote_record = Vote(
             poll_id=poll_id,
-            ip_address=client_ip
+            ip_address=client_ip,
+            user_id=user_id
         )
         db.session.add(vote_record)
-        print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}')
+        print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}, user_id={user_id}')
 
         for opt_id in selected_options:
             option = PollOption.query.get(int(opt_id))
