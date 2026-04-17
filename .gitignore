@@ -1,0 +1,52 @@
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python 虚拟环境
+venv/
+env/
+ENV/
+.venv
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS 系统文件
+.DS_Store
+
+# 日志文件
+*.log
+
+# 临时文件和调试文件
+*.tmp
+*.temp
+*.bak
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 环境配置文件
+.env
+.env.local
+
+# 临时工具和脚本
+temp_*.py
+debug_*.py
+test_*.py
+
+# 编译文件
+*.pyc
+*.pyo
+*.pyd
+
+# 分发包
+dist/
+build/
+*.egg-info/
