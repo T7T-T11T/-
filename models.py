@@ -81,13 +81,15 @@ class Vote(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='投票记录ID')
     poll_id = db.Column(db.Integer, db.ForeignKey('polls.id'), nullable=False, comment='投票ID')
     ip_address = db.Column(db.String(45), nullable=False, comment='投票者IP地址')
-    user_id = db.Column(db.String(36), nullable=True, comment='用户浏览器标识符')
+    # 暂时注释user_id字段，等数据库表结构更新后再添加
+    # user_id = db.Column(db.String(36), nullable=True, comment='用户浏览器标识符')
     voted_at = db.Column(db.DateTime, default=datetime.utcnow, comment='投票时间')
     
-    # 添加唯一约束，确保每个用户只能对每个投票投一次票
+    # 添加唯一约束，确保每个IP只能对每个投票投一次票
     __table_args__ = (
         db.UniqueConstraint('poll_id', 'ip_address', name='_poll_ip_uc'),
-        db.UniqueConstraint('poll_id', 'user_id', name='_poll_user_uc'),
+        # 暂时注释user_id相关的唯一约束
+        # db.UniqueConstraint('poll_id', 'user_id', name='_poll_user_uc'),
     )
 
     def to_dict(self):
@@ -96,7 +98,8 @@ class Vote(db.Model):
             'id': self.id,
             'poll_id': self.poll_id,
             'ip_address': self.ip_address,
-            'user_id': self.user_id,
+            # 暂时注释user_id字段
+            # 'user_id': self.user_id,
             'voted_at': self.voted_at.isoformat() if self.voted_at else None
         }
 
