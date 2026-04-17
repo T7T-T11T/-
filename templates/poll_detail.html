@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poll.title }} - 在线投票系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ poll.title }}</h2>
+</div>
+
+<div class="poll-detail">
+    {% if poll.description %}
+        <div class="poll-description-detail">
+            <p>{{ poll.description }}</p>
+        </div>
+    {% endif %}
+
+    <div class="poll-info-bar">
+        <span class="info-item">
+            📅 创建于 {{ poll.created_at.strftime('%Y-%m-%d %H:%M') }}
+        </span>
+        <span class="info-item">
+            🗳️ 总票数：<strong>{{ total_votes }}</strong>
+        </span>
+        <span class="info-item">
+            📋 {{ '多选投票' if poll.is_multiple else '单选投票' }}
+        </span>
+    </div>
+
+    {% if has_voted %}
+        <div class="alert alert-info">
+            您已经投过票了，感谢您的参与！
+        </div>
+
+        <div class="results-container">
+            <h3>投票结果</h3>
+            {% for item in options_data %}
+                <div class="result-item">
+                    <div class="result-header">
+                        <span class="result-text">{{ item.option.option_text }}</span>
+                        <span class="result-percentage">{{ item.percentage }}%</span>
+                    </div>
+                    <div class="result-bar">
+                        <div class="result-bar-fill" style="width: {{ item.percentage }}%;"></div>
+                    </div>
+                    <div class="result-count">
+                        {{ item.option.vote_count }} 票
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}" class="vote-form" id="voteForm">
+            <div class="options-list">
+                {% for option in poll.options.all() %}
+                    <label class="option-label {% if poll.is_multiple %}checkbox{% else %}radio{% endif %}">
+                        <input type="{% if poll.is_multiple %}checkbox{% else %}radio{% endif %}"
+                               name="options"
+                               value="{{ option.id }}"
+                               class="option-input">
+                        <span class="option-text">{{ option.option_text }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitVoteBtn">提交投票</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+
+<div class="detail-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">返回投票列表</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * 投票表单提交处理
+ * 发送 AJAX 请求进行投票，显示结果
+ */
+document.getElementById('voteForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const selectedOptions = form.querySelectorAll('input[name="options"]:checked');
+    const isMultiple = {{ 'true' if poll.is_multiple else 'false' }};
+
+    if (selectedOptions.length === 0) {
+        alert('请至少选择一个选项');
+        return;
+    }
+
+    if (!isMultiple && selectedOptions.length > 1) {
+        alert('该投票为单选投票，只能选择一个选项');
+        return;
+    }
+
+    const formData = new FormData(form);
+    const submitBtn = document.getElementById('submitVoteBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '提交中...';
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = '提交投票';
+        }
+    })
+    .catch(error => {
+        console.error('投票出错：', error);
+        alert('投票失败，请稍后重试');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交投票';
+    });
+});
+</script>
+{% endblock %}

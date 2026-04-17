@@ -1,0 +1,17 @@
+# Flask Web 框架
+Flask==3.0.0
+
+# Flask-SQLAlchemy 数据库 ORM
+Flask-SQLAlchemy==3.1.1
+
+# PyMySQL MySQL 驱动程序
+PyMySQL==1.1.0
+
+# 加密相关（用于 Flask 会话）
+cryptography==41.0.7
+
+# SQLAlchemy 核心（使用较新版本以兼容 Python 3.13）
+SQLAlchemy==2.0.35
+
+# WSGI 服务器（生产环境使用）
+gunicorn==21.2.0

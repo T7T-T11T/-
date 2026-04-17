@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}投票列表 - 在线投票系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>投票列表</h2>
+    <a href="{{ url_for('create_poll') }}" class="btn btn-primary">创建新投票</a>
+</div>
+
+{% if polls %}
+    <div class="poll-list">
+        {% for item in polls %}
+            <div class="poll-card">
+                <div class="poll-card-header">
+                    <h3 class="poll-title">
+                        <a href="{{ url_for('poll_detail', poll_id=item.poll.id) }}">
+                            {{ item.poll.title }}
+                        </a>
+                    </h3>
+                    <span class="poll-badge {% if item.poll.is_multiple %}badge-multiple{% else %}badge-single{% endif %}">
+                        {{ '多选' if item.poll.is_multiple else '单选' }}
+                    </span>
+                </div>
+
+                {% if item.poll.description %}
+                    <p class="poll-description">{{ item.poll.description }}</p>
+                {% endif %}
+
+                <div class="poll-meta">
+                    <span class="meta-item">
+                        📅 {{ item.poll.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                    <span class="meta-item">
+                        🗳️ {{ item.total_votes }} 票
+                    </span>
+                    <span class="meta-item">
+                        📋 {{ item.poll.options.count() }} 个选项
+                    </span>
+                </div>
+
+                <div class="poll-actions">
+                    <a href="{{ url_for('poll_detail', poll_id=item.poll.id) }}" class="btn btn-sm btn-primary">
+                        查看详情
+                    </a>
+                    <form action="{{ url_for('delete_poll', poll_id=item.poll.id) }}" method="POST" class="delete-form" onsubmit="return confirm('确定要删除这个投票吗？');">
+                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('index', page=pagination.prev_num) }}" class="page-link">&laquo; 上一页</a>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                        <span class="page-link active">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('index', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="page-link">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for('index', page=pagination.next_num) }}" class="page-link">下一页 &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+{% else %}
+    <div class="empty-state">
+        <p>暂无投票</p>
+        <a href="{{ url_for('create_poll') }}" class="btn btn-primary">创建第一个投票</a>
+    </div>
+{% endif %}
+{% endblock %}

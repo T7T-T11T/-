@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}创建投票 - 在线投票系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>创建新投票</h2>
+</div>
+
+<form method="POST" action="{{ url_for('create_poll') }}" class="form create-poll-form" id="createPollForm">
+    <div class="form-group">
+        <label for="title" class="form-label">投票标题 <span class="required">*</span></label>
+        <input type="text"
+               id="title"
+               name="title"
+               class="form-input"
+               maxlength="100"
+               placeholder="请输入投票标题"
+               required>
+        <span class="form-hint">最多100个字符</span>
+    </div>
+
+    <div class="form-group">
+        <label for="description" class="form-label">投票描述</label>
+        <textarea id="description"
+                  name="description"
+                  class="form-textarea"
+                  maxlength="500"
+                  rows="3"
+                  placeholder="请输入投票描述（可选）"></textarea>
+        <span class="form-hint">最多500个字符</span>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">投票类型</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="is_multiple" value="off" checked>
+                <span class="radio-text">单选投票</span>
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="is_multiple" value="on">
+                <span class="radio-text">多选投票</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">投票选项 <span class="required">*</span></label>
+        <div class="options-container" id="optionsContainer">
+            <div class="option-item">
+                <input type="text" name="options" class="form-input option-input" placeholder="选项 1" maxlength="200" required>
+                <button type="button" class="btn btn-sm btn-icon btn-remove-option" onclick="removeOption(this)" style="display: none;">✕</button>
+            </div>
+            <div class="option-item">
+                <input type="text" name="options" class="form-input option-input" placeholder="选项 2" maxlength="200" required>
+                <button type="button" class="btn btn-sm btn-icon btn-remove-option" onclick="removeOption(this)" style="display: none;">✕</button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-secondary" id="addOptionBtn" onclick="addOption()">
+            + 添加选项
+        </button>
+        <span class="form-hint">至少2个选项，最多10个选项</span>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">创建投票</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">取消</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * 添加投票选项
+ * 在选项容器中添加新的选项输入框
+ */
+function addOption() {
+    const container = document.getElementById('optionsContainer');
+    const optionCount = container.querySelectorAll('.option-item').length;
+
+    if (optionCount >= 10) {
+        alert('最多只能添加10个选项');
+        return;
+    }
+
+    const newOption = document.createElement('div');
+    newOption.className = 'option-item';
+    newOption.innerHTML = `
+        <input type="text" name="options" class="form-input option-input" placeholder="选项 ${optionCount + 1}" maxlength="200" required>
+        <button type="button" class="btn btn-sm btn-icon btn-remove-option" onclick="removeOption(this)">✕</button>
+    `;
+
+    container.appendChild(newOption);
+    updateRemoveButtons();
+}
+
+/**
+ * 删除投票选项
+ * @param {HTMLElement} button - 点击的删除按钮元素
+ */
+function removeOption(button) {
+    const container = document.getElementById('optionsContainer');
+    const optionCount = container.querySelectorAll('.option-item').length;
+
+    if (optionCount <= 2) {
+        alert('至少需要2个选项');
+        return;
+    }
+
+    button.parentElement.remove();
+    updateRemoveButtons();
+    updatePlaceholders();
+}
+
+/**
+ * 更新删除按钮的显示状态
+ * 当选项数量<=2时隐藏删除按钮
+ */
+function updateRemoveButtons() {
+    const container = document.getElementById('optionsContainer');
+    const optionCount = container.querySelectorAll('.option-item').length;
+    const removeButtons = container.querySelectorAll('.btn-remove-option');
+
+    removeButtons.forEach(button => {
+        button.style.display = optionCount > 2 ? 'inline-block' : 'none';
+    });
+}
+
+/**
+ * 更新所有选项的占位符文本
+ */
+function updatePlaceholders() {
+    const container = document.getElementById('optionsContainer');
+    const options = container.querySelectorAll('.option-item');
+
+    options.forEach((option, index) => {
+        const input = option.querySelector('input');
+        input.placeholder = `选项 ${index + 1}`;
+    });
+}
+
+/**
+ * 表单验证
+ * 在提交前验证选项数量和内容
+ */
+document.getElementById('createPollForm').addEventListener('submit', function(e) {
+    const container = document.getElementById('optionsContainer');
+    const options = container.querySelectorAll('.option-input');
+    const validOptions = [];
+
+    options.forEach(input => {
+        const value = input.value.trim();
+        if (value) {
+            validOptions.push(value);
+        }
+    });
+
+    if (validOptions.length < 2) {
+        e.preventDefault();
+        alert('至少需要2个有效的投票选项');
+        return;
+    }
+
+    if (validOptions.length > 10) {
+        e.preventDefault();
+        alert('最多只能有10个投票选项');
+        return;
+    }
+});
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    updateRemoveButtons();
+});
+</script>
+{% endblock %}

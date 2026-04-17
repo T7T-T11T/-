@@ -1,0 +1,25 @@
+{
+  "name": "flask-voting-system",
+  "version": "0.1.1",
+  "description": "基于 Flask + MySQL 的简单在线投票系统",
+  "main": "app.py",
+  "scripts": {
+    "start": "python app.py",
+    "init-db": "python init_db.py"
+  },
+  "keywords": [
+    "flask",
+    "mysql",
+    "voting",
+    "system"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "Flask": "^3.0.0",
+    "Flask-SQLAlchemy": "^3.1.1",
+    "PyMySQL": "^1.1.0",
+    "SQLAlchemy": "^2.0.35"
+  },
+  "devDependencies": {}
+}
