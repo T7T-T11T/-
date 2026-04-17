@@ -83,6 +83,39 @@ python app.py
 ADMIN_PASSWORD=your-strong-password gunicorn app:app -w 4 -b 0.0.0.0:5000
 ```
 
+### Railway 部署步骤
+
+1. **创建 Railway 账号**：访问 [Railway](https://railway.app) 并注册账号
+2. **创建新项目**：点击 "New Project" → "Deploy from GitHub repo"
+3. **连接 GitHub 仓库**：选择你的投票系统仓库
+4. **配置环境变量**：
+   - 点击 "Variables" → "Add Variable"
+   - 添加以下环境变量：
+     - `ADMIN_PASSWORD`：设置管理员密码
+     - `SECRET_KEY`：设置唯一的密钥
+     - `MYSQL_HOST`：使用 Railway 提供的 MySQL 主机
+     - `MYSQL_PORT`：使用 Railway 提供的 MySQL 端口
+     - `MYSQL_USER`：使用 Railway 提供的 MySQL 用户名
+     - `MYSQL_PASSWORD`：使用 Railway 提供的 MySQL 密码
+     - `MYSQL_DATABASE`：使用 Railway 提供的 MySQL 数据库名
+5. **添加 MySQL 数据库**：
+   - 点击 "Add Service" → "MySQL"
+   - Railway 会自动创建数据库并提供连接信息
+6. **部署应用**：
+   - 点击 "Deploy" 按钮
+   - Railway 会自动构建和部署应用
+7. **访问应用**：
+   - 部署完成后，Railway 会提供一个公共 URL
+   - 使用该 URL 访问你的投票系统
+
+### 部署注意事项
+
+- **数据库初始化**：首次部署后，需要运行 `python init_db.py` 初始化数据库
+  - 可以在 Railway 的 "Deployments" → "Run Command" 中执行
+- **环境变量安全**：确保所有敏感信息都通过环境变量设置，不要硬编码在代码中
+- **定期备份**：定期备份数据库，以防数据丢失
+- **监控应用**：使用 Railway 的监控功能，及时发现并解决问题
+
 ## 安全注意事项
 
 - 不要将 `.env` 文件提交到版本控制
