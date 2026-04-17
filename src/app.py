@@ -24,6 +24,8 @@ except Exception:
     # 在生产环境中可能没有.env文件，忽略加载错误
     pass
 
+import os
+
 # 获取当前文件所在目录的绝对路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # 模板目录路径
@@ -117,9 +119,21 @@ def index():
 
 
 @app.route('/poll/create', methods=['GET', 'POST'])
-@admin_required
 def create_poll():
     """创建投票路由"""
+    # 检查是否为管理员
+    if 'user_id' not in session:
+        flash('请先登录', 'error')
+        return redirect(url_for('login'))
+    try:
+        user = User.query.get(session['user_id'])
+        if not user or not user.is_admin:
+            flash('需要管理员权限', 'error')
+            return redirect(url_for('index'))
+    except Exception:
+        flash('请先登录', 'error')
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
@@ -202,22 +216,38 @@ def poll_detail(poll_id):
             })
 
         client_ip = request.remote_addr
+        print(f'Poll detail - 用户IP地址: {client_ip}')
         
         # 查询投票记录（基于IP）
         vote_record = None
         try:
             vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
-        except Exception:
+        except Exception as e:
+            print(f'查询投票记录出错: {e}')
             vote_record = None
         
         has_voted = vote_record is not None
+        print(f'Poll detail - 投票记录查询结果: {vote_record}')
+        print(f'Poll detail - has_voted: {has_voted}')
+        
+        # 查询所有投票记录，用于调试
+        try:
+            all_votes = Vote.query.filter_by(poll_id=poll_id).all()
+            print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
+            for vote in all_votes:
+                print(f'  - IP: {vote.ip_address}, 时间: {vote.voted_at}')
+        except Exception as e:
+            print(f'查询所有投票记录出错: {e}')
 
         return render_template('poll_detail.html',
                              poll=poll,
                              options_data=options_data,
                              total_votes=total_votes,
                              has_voted=has_voted)
-    except Exception:
+    except Exception as e:
+        print(f'Poll detail 路由出错: {e}')
+        import traceback
+        traceback.print_exc()
         # 返回错误页面或重定向到首页
         flash('页面加载出错，请稍后重试', 'error')
         return redirect(url_for('index'))
@@ -233,15 +263,25 @@ def vote(poll_id):
 
     client_ip = request.remote_addr
     user_id = request.form.get('user_id')
+    print(f'Vote - 用户IP地址: {client_ip}')
+    print(f'Vote - 用户标识符: {user_id}')
 
     # 检查是否已经投过票（基于IP）
     existing_vote = None
     try:
         existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
-    except Exception:
+    except Exception as e:
+        print(f'查询投票记录出错: {e}')
         existing_vote = None
     
+    # 如果有user_id，检查localStorage中的投票记录
+    if user_id:
+        # 这里可以使用Redis或其他缓存系统来存储user_id和投票记录
+        # 由于没有缓存系统，我们暂时只基于IP地址检查
+        print(f'收到用户标识符: {user_id}，但暂时只基于IP地址检查')
+    
     if existing_vote:
+        print(f'用户已经投过票，投票记录ID: {existing_vote.id}')
         return jsonify({'success': False, 'message': '您已经投过票了'}), 403
 
     selected_options = request.form.getlist('options')
@@ -264,13 +304,23 @@ def vote(poll_id):
             ip_address=client_ip
         )
         db.session.add(vote_record)
+        print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}')
 
         for opt_id in selected_options:
             option = PollOption.query.get(int(opt_id))
             if option:
                 option.vote_count += 1
+                print(f'更新选项票数: option_id={opt_id}, new_count={option.vote_count}')
 
         db.session.commit()
+        print('投票记录保存成功')
+
+        # 再次检查是否保存成功
+        saved_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+        if saved_vote:
+            print(f'投票记录已保存，ID: {saved_vote.id}')
+        else:
+            print('投票记录保存失败')
 
         return jsonify({
             'success': True,
@@ -280,13 +330,35 @@ def vote(poll_id):
 
     except Exception as e:
         db.session.rollback()
+        print(f'投票失败: {str(e)}')
         return jsonify({'success': False, 'message': f'投票失败：{str(e)}'}), 500
 
 
 @app.route('/poll/<int:poll_id>/delete', methods=['POST'])
-@admin_required
 def delete_poll(poll_id):
     """删除投票路由（软删除）"""
+    # 检查是否为管理员
+    if 'user_id' not in session:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'message': '请先登录'}), 401
+        else:
+            flash('请先登录', 'error')
+            return redirect(url_for('login'))
+    try:
+        user = User.query.get(session['user_id'])
+        if not user or not user.is_admin:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('Content-Type') == 'application/json':
+                return jsonify({'success': False, 'message': '需要管理员权限'}), 403
+            else:
+                flash('需要管理员权限', 'error')
+                return redirect(url_for('index'))
+    except Exception:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'message': '请先登录'}), 401
+        else:
+            flash('请先登录', 'error')
+            return redirect(url_for('login'))
+    
     poll = Poll.query.filter_by(id=poll_id, is_deleted=False).first()
 
     # 检查是否为 AJAX 请求
