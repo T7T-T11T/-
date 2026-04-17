@@ -250,7 +250,9 @@ def vote(poll_id):
         return jsonify({'success': False, 'message': '投票不存在或已被删除'}), 404
 
     client_ip = request.remote_addr
+    user_id = request.form.get('user_id')
     print(f'Vote - 用户IP地址: {client_ip}')
+    print(f'Vote - 用户标识符: {user_id}')
 
     # 检查是否已经投过票（基于IP）
     existing_vote = None
@@ -259,6 +261,12 @@ def vote(poll_id):
     except Exception as e:
         print(f'查询投票记录出错: {e}')
         existing_vote = None
+    
+    # 如果有user_id，检查localStorage中的投票记录
+    if user_id:
+        # 这里可以使用Redis或其他缓存系统来存储user_id和投票记录
+        # 由于没有缓存系统，我们暂时只基于IP地址检查
+        print(f'收到用户标识符: {user_id}，但暂时只基于IP地址检查')
     
     if existing_vote:
         print(f'用户已经投过票，投票记录ID: {existing_vote.id}')

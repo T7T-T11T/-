@@ -78,6 +78,25 @@
 <script>
 let isSubmitting = false;
 
+// 生成唯一标识符
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// 获取或创建用户标识符
+function getUserId() {
+    let userId = localStorage.getItem('vote_user_id');
+    if (!userId) {
+        userId = generateUUID();
+        localStorage.setItem('vote_user_id', userId);
+    }
+    return userId;
+}
+
 document.getElementById('voteForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -101,6 +120,9 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     }
 
     const formData = new FormData(form);
+    // 添加用户标识符
+    formData.append('user_id', getUserId());
+    
     const submitBtn = document.getElementById('submitVoteBtn');
     
     // 设置提交状态
@@ -122,6 +144,10 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     .then(data => {
         console.log('响应数据:', data);
         if (data.success) {
+            // 记录投票到localStorage
+            const pollId = {{ poll.id }};
+            recordVote(pollId);
+            
             // 显示成功消息，然后刷新页面
             const successDiv = document.createElement('div');
             successDiv.className = 'alert alert-success';
@@ -159,6 +185,43 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
         submitBtn.disabled = false;
         submitBtn.textContent = '提交投票';
     });
+});
+
+// 检查用户是否已经投过票（基于localStorage）
+function checkVotedStatus() {
+    const userId = getUserId();
+    const pollId = {{ poll.id }};
+    const votedPolls = JSON.parse(localStorage.getItem('voted_polls') || '[]');
+    
+    if (votedPolls.includes(pollId)) {
+        console.log('用户已经投过票（基于localStorage）');
+        // 显示已投票状态
+        const voteForm = document.getElementById('voteForm');
+        if (voteForm) {
+            voteForm.style.display = 'none';
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-info';
+            successDiv.textContent = '您已经投过票了，感谢您的参与！';
+            voteForm.parentNode.insertBefore(successDiv, voteForm);
+        }
+    }
+}
+
+// 记录用户投票（基于localStorage）
+function recordVote(pollId) {
+    const votedPolls = JSON.parse(localStorage.getItem('voted_polls') || '[]');
+    if (!votedPolls.includes(pollId)) {
+        votedPolls.push(pollId);
+        localStorage.setItem('voted_polls', JSON.stringify(votedPolls));
+        console.log('投票记录已保存到localStorage');
+    }
+}
+
+// 页面加载时检查投票状态
+window.addEventListener('load', function() {
+    const userId = getUserId();
+    console.log('用户标识符:', userId);
+    checkVotedStatus();
 });
 </script>
 {% endblock %}
