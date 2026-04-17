@@ -4,6 +4,15 @@ Railway 数据库初始化脚本
 用于在 Railway 部署时初始化数据库
 """
 
+# 加载环境变量
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    # 在生产环境中可能没有.env文件，忽略加载错误
+    pass
+
 from app import app, db
 from models import Poll, PollOption, Vote, User
 

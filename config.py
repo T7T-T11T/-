@@ -6,17 +6,26 @@ Flask 应用配置文件
 
 import os
 
+# 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    # 在生产环境中可能没有.env文件，忽略加载错误
+    pass
+
 
 class Config:
     """Flask 应用配置类"""
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 
-    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-    MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 3306))
-    MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'root')
-    MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'voting_system')
+    # 支持Railway环境变量
+    MYSQL_HOST = os.environ.get('MYSQLHOST', os.environ.get('MYSQL_HOST', 'localhost'))
+    MYSQL_PORT = int(os.environ.get('MYSQLPORT', os.environ.get('MYSQL_PORT', 3306)))
+    MYSQL_USER = os.environ.get('MYSQLUSER', os.environ.get('MYSQL_USER', 'root'))
+    MYSQL_PASSWORD = os.environ.get('MYSQLPASSWORD', os.environ.get('MYSQL_PASSWORD', 'root'))
+    MYSQL_DATABASE = os.environ.get('MYSQLDATABASE', os.environ.get('MYSQL_DATABASE', 'voting_system'))
 
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}'
 

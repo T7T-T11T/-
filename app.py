@@ -11,6 +11,14 @@ from sqlalchemy import func
 from config import Config
 from models import db, Poll, PollOption, Vote, User
 
+# 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    # 在生产环境中可能没有.env文件，忽略加载错误
+    pass
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
