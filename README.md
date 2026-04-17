@@ -92,4 +92,3 @@ ADMIN_PASSWORD=your-strong-password gunicorn app:app -w 4 -b 0.0.0.0:5000
 
 ## 许可证
 
-MIT
