@@ -108,7 +108,7 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
+            // 直接刷新页面，显示投票结果
             location.reload();
         } else {
             alert(data.message);
