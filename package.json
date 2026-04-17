@@ -1,6 +1,6 @@
 {
   "name": "flask-voting-system",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "基于 Flask + MySQL 的简单在线投票系统",
   "main": "app.py",
   "scripts": {
