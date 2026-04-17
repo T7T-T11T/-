@@ -89,7 +89,3 @@ ADMIN_PASSWORD=your-strong-password gunicorn app:app -w 4 -b 0.0.0.0:5000
 - 在生产环境中设置强密码
 - 定期更新依赖包
 - 配置适当的防火墙规则
-
-## 许可证
-
-MIT
