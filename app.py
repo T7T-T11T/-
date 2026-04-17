@@ -204,34 +204,34 @@ def poll_detail(poll_id):
             })
 
         client_ip = request.remote_addr
-    print(f'Poll detail - 用户IP地址: {client_ip}')
-    
-    # 查询投票记录（基于IP）
-    vote_record = None
-    try:
-        vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
-    except Exception as e:
-        print(f'查询投票记录出错: {e}')
+        print(f'Poll detail - 用户IP地址: {client_ip}')
+        
+        # 查询投票记录（基于IP）
         vote_record = None
-    
-    has_voted = vote_record is not None
-    print(f'Poll detail - 投票记录查询结果: {vote_record}')
-    print(f'Poll detail - has_voted: {has_voted}')
-    
-    # 查询所有投票记录，用于调试
-    try:
-        all_votes = Vote.query.filter_by(poll_id=poll_id).all()
-        print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
-        for vote in all_votes:
-            print(f'  - IP: {vote.ip_address}, 时间: {vote.voted_at}')
-    except Exception as e:
-        print(f'查询所有投票记录出错: {e}')
+        try:
+            vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+        except Exception as e:
+            print(f'查询投票记录出错: {e}')
+            vote_record = None
+        
+        has_voted = vote_record is not None
+        print(f'Poll detail - 投票记录查询结果: {vote_record}')
+        print(f'Poll detail - has_voted: {has_voted}')
+        
+        # 查询所有投票记录，用于调试
+        try:
+            all_votes = Vote.query.filter_by(poll_id=poll_id).all()
+            print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
+            for vote in all_votes:
+                print(f'  - IP: {vote.ip_address}, 时间: {vote.voted_at}')
+        except Exception as e:
+            print(f'查询所有投票记录出错: {e}')
 
-    return render_template('poll_detail.html',
-                         poll=poll,
-                         options_data=options_data,
-                         total_votes=total_votes,
-                         has_voted=has_voted)
+        return render_template('poll_detail.html',
+                             poll=poll,
+                             options_data=options_data,
+                             total_votes=total_votes,
+                             has_voted=has_voted)
     except Exception as e:
         print(f'Poll detail 路由出错: {e}')
         import traceback
