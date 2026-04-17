@@ -221,9 +221,12 @@ def vote(poll_id):
         return jsonify({'success': False, 'message': '投票不存在或已被删除'}), 404
 
     client_ip = request.remote_addr
+    print(f'用户IP地址: {client_ip}')
 
+    # 检查是否已经投过票
     existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
     if existing_vote:
+        print(f'用户已经投过票，投票记录ID: {existing_vote.id}')
         return jsonify({'success': False, 'message': '您已经投过票了'}), 403
 
     selected_options = request.form.getlist('options')
@@ -245,13 +248,23 @@ def vote(poll_id):
             ip_address=client_ip
         )
         db.session.add(vote_record)
+        print(f'创建投票记录: poll_id={poll_id}, ip={client_ip}')
 
         for opt_id in selected_options:
             option = PollOption.query.get(int(opt_id))
             if option:
                 option.vote_count += 1
+                print(f'更新选项票数: option_id={opt_id}, new_count={option.vote_count}')
 
         db.session.commit()
+        print('投票记录保存成功')
+
+        # 再次检查是否保存成功
+        saved_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+        if saved_vote:
+            print(f'投票记录已保存，ID: {saved_vote.id}')
+        else:
+            print('投票记录保存失败')
 
         return jsonify({
             'success': True,
@@ -261,6 +274,7 @@ def vote(poll_id):
 
     except Exception as e:
         db.session.rollback()
+        print(f'投票失败: {str(e)}')
         return jsonify({'success': False, 'message': f'投票失败：{str(e)}'}), 500
 
 
