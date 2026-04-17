@@ -2,11 +2,15 @@
 
 基于 Flask + MySQL 的简单在线投票系统，支持管理员创建投票，普通用户参与投票。
 
+## 项目简介
+
+这是一个轻量级的在线投票系统，旨在提供简单易用的投票功能。系统支持创建单选和多选投票，实时显示投票结果，并通过 IP 地址和浏览器存储机制防止重复投票。
+
 ## 功能特点
 
 - ✅ 管理员可以创建投票（支持单选/多选）
 - ✅ 普通用户无需登录即可参与投票
-- ✅ 基于 IP 地址的防重复投票机制
+- ✅ 基于 IP 地址和浏览器存储的防重复投票机制
 - ✅ 实时显示投票结果和比例
 - ✅ 支持投票的软删除功能
 - ✅ 响应式前端界面
@@ -17,6 +21,30 @@
 - **后端**：Flask, SQLAlchemy, MySQL
 - **前端**：HTML, CSS, JavaScript
 - **安全**：bcrypt 密码哈希, 会话安全配置
+
+## 项目结构
+
+```
+├── static/               # 静态资源文件
+│   ├── css/              # CSS 样式文件
+│   └── js/               # JavaScript 文件
+├── templates/            # HTML 模板文件
+├── .env.example          # 环境变量示例文件
+├── .gitignore            # Git 忽略文件配置
+├── CODE_OF_CONDUCT.md    # 行为准则
+├── CONTRIBUTING.md       # 贡献指南
+├── LICENSE               # 许可证文件
+├── Procfile              # 部署配置文件
+├── README.md             # 项目说明文档
+├── app.py                # 应用主文件
+├── config.py             # 配置文件
+├── history.md            # 版本历史记录
+├── init_db.py            # 数据库初始化脚本
+├── models.py             # 数据库模型
+├── package.json          # 项目配置文件
+├── railway_init.py       # Railway 部署初始化脚本
+└── requirements.txt      # Python 依赖文件
+```
 
 ## 安装配置
 
@@ -46,6 +74,9 @@ MYSQL_DATABASE=voting_system
 
 # 管理员密码（生产环境必须设置）
 ADMIN_PASSWORD=your-strong-admin-password
+
+# 会话密钥（生产环境必须设置）
+SECRET_KEY=your-secret-key
 ```
 
 ### 4. 初始化数据库
@@ -126,3 +157,28 @@ ADMIN_PASSWORD=your-strong-password gunicorn app:app -w 4 -b 0.0.0.0:5000
 - 在生产环境中设置强密码
 - 定期更新依赖包
 - 配置适当的防火墙规则
+
+## 贡献指南
+
+我们欢迎社区贡献！如果你想参与项目开发，请：
+
+1. Fork 项目仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+## 问题反馈
+
+如果你遇到任何问题或有建议，请在 GitHub 仓库中创建 Issue。
+
+## 许可证
+
+本项目采用 MIT 许可证 - 详情请查看 [LICENSE](LICENSE) 文件
+
+## 鸣谢
+
+- [Flask](https://flask.palletsprojects.com/)
+- [SQLAlchemy](https://www.sqlalchemy.org/)
+- [MySQL](https://www.mysql.com/)
+- [bcrypt](https://pypi.org/project/bcrypt/)

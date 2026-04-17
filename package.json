@@ -1,6 +1,6 @@
 {
   "name": "flask-voting-system",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "基于 Flask + MySQL 的简单在线投票系统",
   "main": "app.py",
   "scripts": {
@@ -8,12 +8,22 @@
     "init-db": "python init_db.py"
   },
   "keywords": ["flask", "mysql", "voting", "system"],
-  "author": "",
+  "author": "Open Source Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/voting-system.git"
+  },
   "dependencies": {
     "Flask": "^3.0.0",
     "Flask-SQLAlchemy": "^3.1.1",
     "PyMySQL": "^1.1.0",
-    "SQLAlchemy": "^2.0.35"
+    "SQLAlchemy": "^2.0.35",
+    "cryptography": "^41.0.7",
+    "gunicorn": "^21.2.0",
+    "Flask-WTF": "^1.1.1",
+    "bcrypt": "^4.0.1",
+    "python-dotenv": "^1.2.1"
   },
   "devDependencies": {}
 }
