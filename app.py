@@ -203,7 +203,19 @@ def poll_detail(poll_id):
         })
 
     client_ip = request.remote_addr
-    has_voted = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first() is not None
+    print(f'Poll detail - 用户IP地址: {client_ip}')
+    
+    # 查询投票记录
+    vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+    has_voted = vote_record is not None
+    print(f'Poll detail - 投票记录查询结果: {vote_record}')
+    print(f'Poll detail - has_voted: {has_voted}')
+    
+    # 查询所有投票记录，用于调试
+    all_votes = Vote.query.filter_by(poll_id=poll_id).all()
+    print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
+    for vote in all_votes:
+        print(f'  - IP: {vote.ip_address}, 时间: {vote.voted_at}')
 
     return render_template('poll_detail.html',
                          poll=poll,
@@ -221,7 +233,7 @@ def vote(poll_id):
         return jsonify({'success': False, 'message': '投票不存在或已被删除'}), 404
 
     client_ip = request.remote_addr
-    print(f'用户IP地址: {client_ip}')
+    print(f'Vote - 用户IP地址: {client_ip}')
 
     # 检查是否已经投过票
     existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
