@@ -15,7 +15,7 @@ class Config:
     MYSQL_HOST = 'localhost'          # MySQL 服务器主机地址
     MYSQL_PORT = 3306                 # MySQL 服务器端口
     MYSQL_USER = 'root'               # MySQL 用户名
-    MYSQL_PASSWORD = 'your-password'  # MySQL 密码
+    MYSQL_PASSWORD = 'root'  # MySQL 密码
     MYSQL_DATABASE = 'voting_system'  # MySQL 数据库名称
 
     # SQLAlchemy 数据库 URI 格式
