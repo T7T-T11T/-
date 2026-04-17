@@ -1,11 +1,11 @@
 {
   "name": "flask-voting-system",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "基于 Flask + MySQL 的简单在线投票系统",
   "main": "app.py",
   "scripts": {
-    "start": "python app.py",
-    "init-db": "python init_db.py"
+    "start": "python src/app.py",
+    "init-db": "python scripts/init_db.py"
   },
   "keywords": ["flask", "mysql", "voting", "system"],
   "author": "Open Source Contributors",

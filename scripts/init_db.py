@@ -5,6 +5,12 @@
 """
 
 import pymysql
+import sys
+import os
+
+# 添加src目录到Python路径
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 from config import Config
 
 
@@ -42,12 +48,12 @@ def create_database():
 
 def create_tables():
     """创建数据表"""
-    from app import app, db
+    from src.app import app, db
 
     with app.app_context():
         try:
             # 先删除旧的 users 表（如果存在），因为字段结构已经改变
-            from models import User
+            from src.models import User
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             if inspector.has_table('users'):
@@ -89,7 +95,7 @@ def create_tables():
 
 def add_comments():
     """为数据库表和字段添加中文注释"""
-    from app import app, db
+    from src.app import app, db
     from sqlalchemy import text
 
     with app.app_context():

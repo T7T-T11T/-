@@ -6,6 +6,11 @@ Railway 数据库初始化脚本
 
 # 加载环境变量
 import os
+import sys
+
+# 添加src目录到Python路径
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -13,8 +18,8 @@ except Exception:
     # 在生产环境中可能没有.env文件，忽略加载错误
     pass
 
-from app import app, db
-from models import Poll, PollOption, Vote, User
+from src.app import app, db
+from src.models import Poll, PollOption, Vote, User
 
 with app.app_context():
     try:

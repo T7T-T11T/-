@@ -25,6 +25,13 @@
 ## 项目结构
 
 ```
+├── src/                  # 源代码目录
+│   ├── app.py            # 应用主文件
+│   ├── config.py         # 配置文件
+│   └── models.py         # 数据库模型
+├── scripts/              # 脚本目录
+│   ├── init_db.py        # 数据库初始化脚本
+│   └── railway_init.py   # Railway 部署初始化脚本
 ├── static/               # 静态资源文件
 │   ├── css/              # CSS 样式文件
 │   └── js/               # JavaScript 文件
@@ -36,13 +43,8 @@
 ├── LICENSE               # 许可证文件
 ├── Procfile              # 部署配置文件
 ├── README.md             # 项目说明文档
-├── app.py                # 应用主文件
-├── config.py             # 配置文件
 ├── history.md            # 版本历史记录
-├── init_db.py            # 数据库初始化脚本
-├── models.py             # 数据库模型
 ├── package.json          # 项目配置文件
-├── railway_init.py       # Railway 部署初始化脚本
 └── requirements.txt      # Python 依赖文件
 ```
 
@@ -82,13 +84,13 @@ SECRET_KEY=your-secret-key
 ### 4. 初始化数据库
 
 ```bash
-python init_db.py
+python scripts/init_db.py
 ```
 
 ### 5. 启动应用
 
 ```bash
-python app.py
+python src/app.py
 ```
 
 ### 6. 访问应用

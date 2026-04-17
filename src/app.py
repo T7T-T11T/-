@@ -8,6 +8,12 @@ import os
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from sqlalchemy import func
+import sys
+import os
+
+# 添加src目录到Python路径
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 from config import Config
 from models import db, Poll, PollOption, Vote, User
 
