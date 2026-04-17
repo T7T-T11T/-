@@ -115,8 +115,12 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('响应状态:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('响应数据:', data);
         if (data.success) {
             // 显示成功消息，然后刷新页面
             const successDiv = document.createElement('div');
@@ -128,10 +132,20 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
             form.style.display = 'none';
             
             // 延迟刷新，让用户看到成功消息
+            console.log('投票成功，准备刷新页面...');
             setTimeout(() => {
-                location.reload();
+                console.log('执行页面刷新');
+                try {
+                    // 强制刷新页面，忽略缓存
+                    location.reload(true);
+                } catch (e) {
+                    console.error('刷新页面出错:', e);
+                    // 备选方案
+                    location.href = location.href + '?t=' + new Date().getTime();
+                }
             }, 1000);
         } else {
+            console.log('投票失败:', data.message);
             alert(data.message);
             isSubmitting = false;
             submitBtn.disabled = false;
