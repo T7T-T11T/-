@@ -124,6 +124,7 @@ def add_comments():
                 MODIFY COLUMN id INT AUTO_INCREMENT COMMENT '投票记录ID',
                 MODIFY COLUMN poll_id INT NOT NULL COMMENT '投票ID',
                 MODIFY COLUMN ip_address VARCHAR(45) NOT NULL COMMENT '投票者IP地址',
+                MODIFY COLUMN user_id VARCHAR(36) COMMENT '用户浏览器标识符',
                 MODIFY COLUMN voted_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '投票时间'
             """))
             print("votes 表注释添加成功")

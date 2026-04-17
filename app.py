@@ -186,53 +186,68 @@ def create_poll():
 @app.route('/poll/<int:poll_id>')
 def poll_detail(poll_id):
     """投票详情路由"""
-    poll = Poll.query.filter_by(id=poll_id, is_deleted=False).first()
+    try:
+        poll = Poll.query.filter_by(id=poll_id, is_deleted=False).first()
 
-    if not poll:
-        flash('投票不存在或已被删除', 'error')
+        if not poll:
+            flash('投票不存在或已被删除', 'error')
+            return redirect(url_for('index'))
+
+        options = poll.options.all()
+        total_votes = poll.get_total_votes()
+
+        options_data = []
+        for option in options:
+            options_data.append({
+                'option': option,
+                'percentage': option.get_percentage(total_votes)
+            })
+
+        client_ip = request.remote_addr
+        # 从请求参数中获取user_id
+        user_id = request.args.get('user_id')
+        print(f'Poll detail - 用户IP地址: {client_ip}')
+        print(f'Poll detail - 用户标识符: {user_id}')
+        
+        # 查询投票记录（基于IP或用户标识符）
+        vote_record = None
+        try:
+            if user_id:
+                vote_record = Vote.query.filter(
+                    (Vote.poll_id == poll_id) & 
+                    ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
+                ).first()
+            else:
+                vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
+        except Exception as e:
+            print(f'查询投票记录出错: {e}')
+            vote_record = None
+        
+        has_voted = vote_record is not None
+        print(f'Poll detail - 投票记录查询结果: {vote_record}')
+        print(f'Poll detail - has_voted: {has_voted}')
+        
+        # 查询所有投票记录，用于调试
+        try:
+            all_votes = Vote.query.filter_by(poll_id=poll_id).all()
+            print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
+            for vote in all_votes:
+                print(f'  - IP: {vote.ip_address}, UserID: {vote.user_id}, 时间: {vote.voted_at}')
+        except Exception as e:
+            print(f'查询所有投票记录出错: {e}')
+
+        return render_template('poll_detail.html',
+                             poll=poll,
+                             options_data=options_data,
+                             total_votes=total_votes,
+                             has_voted=has_voted)
+    except Exception as e:
+        print(f'Poll detail 路由出错: {e}')
+        import traceback
+        traceback.print_exc()
+        # 返回错误页面或重定向到首页
+        flash('页面加载出错，请稍后重试', 'error')
         return redirect(url_for('index'))
-
-    options = poll.options.all()
-    total_votes = poll.get_total_votes()
-
-    options_data = []
-    for option in options:
-        options_data.append({
-            'option': option,
-            'percentage': option.get_percentage(total_votes)
-        })
-
-    client_ip = request.remote_addr
-    # 从请求参数中获取user_id
-    user_id = request.args.get('user_id')
-    print(f'Poll detail - 用户IP地址: {client_ip}')
-    print(f'Poll detail - 用户标识符: {user_id}')
-    
-    # 查询投票记录（基于IP或用户标识符）
-    vote_record = None
-    if user_id:
-        vote_record = Vote.query.filter(
-            (Vote.poll_id == poll_id) & 
-            ((Vote.ip_address == client_ip) | (Vote.user_id == user_id))
-        ).first()
-    else:
-        vote_record = Vote.query.filter_by(poll_id=poll_id, ip_address=client_ip).first()
-    
-    has_voted = vote_record is not None
-    print(f'Poll detail - 投票记录查询结果: {vote_record}')
-    print(f'Poll detail - has_voted: {has_voted}')
-    
-    # 查询所有投票记录，用于调试
-    all_votes = Vote.query.filter_by(poll_id=poll_id).all()
-    print(f'Poll detail - 该投票的所有投票记录: {len(all_votes)} 条')
-    for vote in all_votes:
-        print(f'  - IP: {vote.ip_address}, UserID: {vote.user_id}, 时间: {vote.voted_at}')
-
-    return render_template('poll_detail.html',
-                         poll=poll,
-                         options_data=options_data,
-                         total_votes=total_votes,
-                         has_voted=has_voted)
 
 
 @app.route('/poll/<int:poll_id>/vote', methods=['POST'])
