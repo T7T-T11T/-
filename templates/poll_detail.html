@@ -30,25 +30,28 @@
         <div class="alert alert-info">
             您已经投过票了，感谢您的参与！
         </div>
+    {% endif %}
 
-        <div class="results-container">
-            <h3>投票结果</h3>
-            {% for item in options_data %}
-                <div class="result-item">
-                    <div class="result-header">
-                        <span class="result-text">{{ item.option.option_text }}</span>
-                        <span class="result-percentage">{{ item.percentage }}%</span>
-                    </div>
-                    <div class="result-bar">
-                        <div class="result-bar-fill" style="width: {{ item.percentage }}%;"></div>
-                    </div>
-                    <div class="result-count">
-                        {{ item.option.vote_count }} 票
-                    </div>
+    <!-- 始终显示投票结果 -->
+    <div class="results-container">
+        <h3>投票结果</h3>
+        {% for item in options_data %}
+            <div class="result-item">
+                <div class="result-header">
+                    <span class="result-text">{{ item.option.option_text }}</span>
+                    <span class="result-percentage">{{ item.percentage }}%</span>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
+                <div class="result-bar">
+                    <div class="result-bar-fill" style="width: {{ item.percentage }}%;"></div>
+                </div>
+                <div class="result-count">
+                    {{ item.option.vote_count }} 票
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not has_voted %}
         <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}" class="vote-form" id="voteForm">
         <div class="options-list">
                 {% for option in poll.options.all() %}
@@ -203,6 +206,12 @@ function checkVotedStatus() {
             successDiv.className = 'alert alert-info';
             successDiv.textContent = '您已经投过票了，感谢您的参与！';
             voteForm.parentNode.insertBefore(successDiv, voteForm);
+            
+            // 确保投票结果容器存在并显示
+            const resultsContainer = document.querySelector('.results-container');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'block';
+            }
         }
     }
 }
